@@ -22,13 +22,21 @@ const POSTCHECK_PLANS = {
   team: { name: "Team", price: 16, seats: 5, dailyScanLimit: null },
 };
 
-// Fill these in with the real Payment Links you create in the Stripe
-// Dashboard (Payment Links -> Create link, one per price). No code
-// needed on Stripe's side for this part.
+// Your real Stripe Payment Links.
 const POSTCHECK_STRIPE_LINKS = {
-  pro: "https://buy.stripe.com/https://buy.stripe.com/28EcN5b5Pb9b4M09Pr1ck00",
+  pro: "https://buy.stripe.com/28EcN5b5Pb9b4M09Pr1ck00",
   team: "https://buy.stripe.com/bJe00jddX1yBguIaTv1ck02",
 };
+
+/**
+ * Defensive fix in case a link ever gets pasted with a doubled prefix
+ * again: "https://buy.stripe.com/https://buy.stripe.com/abc123" -> "https://buy.stripe.com/abc123"
+ */
+function postcheckNormalizeLink(url) {
+  const doubled = /^https:\/\/buy\.stripe\.com\/(https:\/\/buy\.stripe\.com\/.+)$/;
+  const match = url.match(doubled);
+  return match ? match[1] : url;
+}
 
 function postcheckGetStoredEmail() {
   try {
