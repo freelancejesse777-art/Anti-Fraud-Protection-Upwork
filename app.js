@@ -26,8 +26,8 @@ const POSTCHECK_PLANS = {
 // Dashboard (Payment Links -> Create link, one per price). No code
 // needed on Stripe's side for this part.
 const POSTCHECK_STRIPE_LINKS = {
-  pro: "https://buy.stripe.com/REPLACE_WITH_YOUR_PRO_PAYMENT_LINK",
-  team: "https://buy.stripe.com/REPLACE_WITH_YOUR_TEAM_PAYMENT_LINK",
+  pro: "https://buy.stripe.com/https://buy.stripe.com/28EcN5b5Pb9b4M09Pr1ck00",
+  team: "https://buy.stripe.com/bJe00jddX1yBguIaTv1ck02",
 };
 
 function postcheckGetStoredEmail() {
