@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Postcheck — Know a fake Upwork job before it costs you</title>
+<meta name="description" content="A Chrome extension that scans Upwork job posts for scam patterns before you apply.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=3">
+<style>
+  .hero{
+    padding: 96px 24px 72px; max-width: 1080px; margin: 0 auto;
+    display:grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items:center;
+  }
+  .hero h1{ font-size: 48px; line-height: 1.06; font-weight: 600; margin-bottom: 22px; }
+  .hero h1 em{ font-style:normal; color: var(--steel); }
+  .hero p.sub{ font-size: 17px; line-height: 1.6; color: rgba(233,230,220,0.68); max-width: 480px; margin-bottom: 32px; }
+  .cta-row{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .cta-note{ font-family:'IBM Plex Mono', monospace; font-size: 11px; color: rgba(233,230,220,0.45); margin-top: 14px; }
+
+  .scanwin{ background: var(--ink-soft); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6); }
+  .scanwin-bar{ display:flex; align-items:center; gap:6px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .scanwin-bar span{ width:9px;height:9px;border-radius:50%; background: rgba(233,230,220,0.18);}
+  .scanwin-body{ padding: 20px; display:flex; flex-direction:column; gap:14px; }
+  .fakepost{ background: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 16px; position: relative; }
+  .fakepost h4{ font-size: 13.5px; font-weight:600; margin-bottom: 6px; padding-right: 90px;}
+  .fakepost .meta{ font-size: 11.5px; color: rgba(233,230,220,0.45); margin-bottom: 10px; }
+  .fakepost .lines span{ display:block; height:7px; border-radius:4px; background: rgba(233,230,220,0.08); margin-bottom: 6px; }
+  .fakepost .lines span:nth-child(1){ width: 92%; }
+  .fakepost .lines span:nth-child(2){ width: 78%; }
+  .scan-badge{ position: absolute; top: 14px; right: 14px; display:flex; align-items:center; gap:8px; padding: 5px 11px 5px 8px; border-radius: 999px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight: 600; }
+  .scan-badge.risk{ background: var(--risk-dim); border: 1px solid rgba(193,68,59,0.5); color:#F0B6B0; }
+  .scan-badge.safe{ background: var(--safe-dim); border: 1px solid rgba(62,124,89,0.5); color:#9BD3B4; }
+  .scan-ring{ width:14px;height:14px; border-radius:50%; position: relative; }
+  .scan-badge.risk .scan-ring{ border: 2px solid var(--risk); }
+  .scan-badge.safe .scan-ring{ border: 2px solid var(--safe); }
+  .scan-badge.risk .scan-ring::after{ content:''; position:absolute; inset:-5px; border-radius:50%; border: 1.5px solid rgba(193,68,59,0.5); animation: pulse 1.8s ease-out infinite; }
+  @keyframes pulse{ 0%{ transform:scale(0.6); opacity: 0.9; } 100%{ transform:scale(1.6); opacity: 0; } }
+
+  .rule-top{ border-top: 1px solid var(--line); }
+  section h2{ font-size: 26px; margin-bottom: 40px; }
+  .step-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap: 28px; }
+  .step .num{ font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--steel); margin-bottom: 14px; display:block; }
+  .step h3{ font-size: 17px; margin-bottom: 8px; font-weight:600; }
+  .step p{ font-size: 13.5px; line-height:1.55; color: rgba(233,230,220,0.6); }
+
+  .pricing-preview > p{ color: rgba(233,230,220,0.55); font-size:14px; margin-bottom:36px; }
+
+  .waitlist{ border: 1px solid var(--line); border-radius: 14px; padding: 40px; text-align:center; background: var(--ink-soft); }
+  .waitlist h2{ margin-bottom: 10px; font-size: 24px; }
+  .waitlist p{ color: rgba(233,230,220,0.6); font-size:14px; margin-bottom: 24px; max-width:440px; margin-left:auto; margin-right:auto; }
+  .waitlist-form{ display:flex; gap:10px; max-width: 420px; margin: 0 auto; }
+  .waitlist-form input{ flex:1; padding: 12px 14px; border-radius:8px; border: 1px solid var(--line-strong); background: var(--ink); color: var(--paper); font-family:'Inter',sans-serif; font-size: 14px; }
+  .waitlist-form input::placeholder{ color: rgba(233,230,220,0.35); }
+  .waitlist-note{ font-family:'IBM Plex Mono',monospace; font-size:11px; color: rgba(233,230,220,0.4); margin-top:14px; }
+  .form-success{ display:none; color:#9BD3B4; font-size: 13.5px; margin-top: 14px; }
+
+  @media (max-width: 760px){
+    .hero{ grid-template-columns: 1fr; }
+    .hero h1{ font-size: 36px; }
+    .waitlist-form{ flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Postcheck</a>
+  <div class="navlinks">
+    <a href="index.html#how">How it works</a>
+    <a href="pricing.html" data-page="pricing.html">Pricing</a>
+    <a href="dashboard.html" data-page="dashboard.html">Subscription</a>
+    <a href="index.html#get-it">Get Postcheck</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow"><span class="dot"></span> FREE TO START · UPGRADE ANY TIME</div>
+    <h1>Know a fake job post <em>before</em> it costs you.</h1>
+    <p class="sub">Postcheck scans Upwork job listings as you browse and flags the patterns scammers use — bait pay, off-platform payment asks, unpaid "tests" — before you spend a Connect or a minute applying.</p>
+    <div class="cta-row">
+      <a href="#get-it" class="btn btn-primary">Download the extension</a>
+      <a href="pricing.html" class="btn btn-ghost">See pricing</a>
+    </div>
+    <div class="cta-note">Free tier available · Runs entirely in your browser</div>
+  </div>
+  <div class="scanwin">
+    <div class="scanwin-bar"><span></span><span></span><span></span></div>
+    <div class="scanwin-body">
+      <div class="fakepost">
+        <div class="scan-badge risk"><div class="scan-ring"></div>HIGH RISK</div>
+        <h4>Marketing Specialist — Urgent, $4,800/wk</h4>
+        <div class="meta">Posted 3 min ago · No client reviews</div>
+        <div class="lines"><span></span><span></span></div>
+      </div>
+      <div class="fakepost">
+        <div class="scan-badge safe"><div class="scan-ring"></div>LOW RISK</div>
+        <h4>React Developer, SaaS Dashboard Rebuild</h4>
+        <div class="meta">$45–65/hr · Payment verified · 4.9★</div>
+        <div class="lines"><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main style="padding-top:0;">
+  <section class="rule-top" id="how" style="padding-top:60px;">
+    <h2>What happens when you open a job post</h2>
+    <div class="step-grid">
+      <div class="step">
+        <span class="num">01 / SCAN</span>
+        <h3>Reads the post as you browse</h3>
+        <p>Checks the listing text and client details against known scam patterns — before you click apply.</p>
+      </div>
+      <div class="step">
+        <span class="num">02 / FLAG</span>
+        <h3>Shows you exactly why</h3>
+        <p>No black-box score. Every flag names the specific signal, so you can judge it yourself in a few seconds.</p>
+      </div>
+      <div class="step">
+        <span class="num">03 / REPORT</span>
+        <h3>One click to copy a report</h3>
+        <p>Pre-fills a summary of what was found so flagging a scam to Upwork takes seconds, not a written statement.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="rule-top pricing-preview">
+    <h2>Plans</h2>
+    <p>Full feature breakdown on the <a href="pricing.html" style="text-decoration:underline;">pricing page</a>. Quick summary:</p>
+    <div class="plans">
+      <div class="plan">
+        <div class="pname">Free</div>
+        <div class="price">$0</div>
+        <div class="pdesc">5 scans/day, core detection</div>
+        <ul><li>Good for occasional applicants</li></ul>
+        <a href="pricing.html" class="btn btn-ghost">View details</a>
+      </div>
+      <div class="plan featured">
+        <div class="pname">Pro</div>
+        <div class="price">$8<span>/mo</span></div>
+        <div class="pdesc">Unlimited scans, full breakdown</div>
+        <ul><li>Best for active freelancers</li></ul>
+        <a href="checkout.html?plan=pro" class="btn btn-primary">Start Pro</a>
+      </div>
+      <div class="plan">
+        <div class="pname">Team</div>
+        <div class="price">$16<span>/mo</span></div>
+        <div class="pdesc">5 seats, shared scam database</div>
+        <ul><li>Best for agencies</li></ul>
+        <a href="checkout.html?plan=team" class="btn btn-ghost">Start Team</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="rule-top" id="get-it">
+    <div class="waitlist">
+      <h2>Get Postcheck</h2>
+      <p>Free and open source — load it directly from GitHub while the Chrome Web Store listing is pending review.</p>
+      <form class="waitlist-form" id="waitlistForm">
+        <input type="email" id="waitlistEmail" placeholder="you@example.com" required>
+        <button type="submit" class="btn btn-primary">Notify me at launch</button>
+      </form>
+      <div class="form-success" id="formSuccess">You're on the list — thanks. Grab the extension from GitHub below in the meantime.</div>
+      <div class="waitlist-note">
+        <a href="https://github.com/YOUR-USERNAME/YOUR-REPO" target="_blank" rel="noopener">Download from GitHub →</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>Postcheck — built by freelancers, for freelancers.</span>
+  <a href="https://github.com/YOUR-USERNAME/YOUR-REPO" target="_blank" rel="noopener">GitHub</a>
+</footer>
+
+<script src="app.js?v=3"></script>
+<script>
+  document.getElementById('waitlistForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    document.getElementById('formSuccess').style.display = 'block';
+    this.reset();
+  });
+</script>
+
+</body>
+</html>
