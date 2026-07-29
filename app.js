@@ -24,8 +24,8 @@ const POSTCHECK_PLANS = {
 
 // Your real Stripe Payment Links.
 const POSTCHECK_STRIPE_LINKS = {
-  pro: "https://buy.stripe.com/28EcN5b5Pb9b4M09Pr1ck00",
-  team: "https://buy.stripe.com/bJe00jddX1yBguIaTv1ck02",
+  pro: "https://buy.stripe.com/7sYcN51vfgtv4M00eR1ck03",
+  team: "https://buy.stripe.com/eVqeVd8XHb9bguId1D1ck04",
 };
 
 /**
