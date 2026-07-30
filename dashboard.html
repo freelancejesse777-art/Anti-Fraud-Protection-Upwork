@@ -8,11 +8,42 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=3">
 <style>
-  .welcome-banner{
-    background: rgba(62,124,89,0.14); border: 1px solid rgba(62,124,89,0.4);
-    color: #9BD3B4; font-size: 13px; padding: 12px 16px; border-radius: 8px;
-    margin-bottom: 28px; display:none;
+  .confirm-card{
+    display: none;
+    border: 1px solid rgba(62,124,89,0.4);
+    background: linear-gradient(180deg, rgba(62,124,89,0.12), rgba(62,124,89,0.03));
+    border-radius: 14px;
+    padding: 36px;
+    text-align: center;
+    margin-bottom: 32px;
   }
+  .confirm-icon{
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--safe);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px;
+  }
+  .confirm-icon svg{ width: 24px; height: 24px; }
+  .confirm-card h2{ font-size: 22px; margin-bottom: 8px; }
+  .confirm-card p{ font-size: 13.5px; color: rgba(233,230,220,0.65); max-width: 420px; margin: 0 auto 22px; line-height: 1.6; }
+  .confirm-plan-tag{
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600;
+    background: rgba(18,26,30,0.5); border: 1px solid rgba(233,230,220,0.15);
+    padding: 7px 14px; border-radius: 999px; margin-bottom: 24px;
+  }
+  .confirm-plan-tag .dot{ width: 6px; height: 6px; border-radius: 50%; background: var(--safe); }
+  .confirm-steps{
+    display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+    text-align: left; margin-bottom: 6px;
+  }
+  .confirm-step{
+    flex: 1; min-width: 180px; max-width: 220px;
+    background: var(--ink); border: 1px solid rgba(233,230,220,0.1);
+    border-radius: 10px; padding: 16px;
+  }
+  .confirm-step .num{ font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--steel); margin-bottom: 8px; display: block; }
+  .confirm-step p{ font-size: 12.5px; color: rgba(233,230,220,0.7); margin: 0; text-align: left; max-width: none; }
   .dash-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 28px; flex-wrap:wrap; gap:12px; }
   .plan-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 20px; }
   .install-note{ font-size:13px; color: rgba(233,230,220,0.55); line-height:1.7; }
@@ -31,157 +62,13 @@
 </nav>
 
 <main>
-  <div class="welcome-banner" id="welcomeBanner">You're all set — your plan is active.</div>
-
-  <div id="loadingState" class="loading">Looking up your account…</div>
-
-  <div id="lookupState" style="display:none;">
-    <section>
-      <div class="eyebrow"><span class="dot"></span> DASHBOARD</div>
-      <h1 style="font-size:30px; margin-bottom: 20px;">Find your account</h1>
-      <div class="card" style="max-width:420px;">
-        <div class="field">
-          <label for="lookupEmail">Email you checked out with</label>
-          <input type="email" id="lookupEmail" placeholder="you@example.com">
-        </div>
-        <button class="btn btn-primary" id="lookupBtn" style="width:100%;">Look up plan</button>
-        <div class="form-note" id="lookupError" style="display:none; color:#F0B6B0;">No account found for that email — it may take a minute after checkout for payment to be confirmed, or check the address you used.</div>
-      </div>
-    </section>
-  </div>
-
-  <div id="loggedOutState" style="display:none;">
-    <section>
-      <div class="eyebrow"><span class="dot"></span> DASHBOARD</div>
-      <h1 style="font-size:30px; margin-bottom: 20px;">No paid plan yet</h1>
-      <div class="empty-account">
-        <h3 style="font-size:16px;">You're on the Free tier</h3>
-        <p>The Free tier works entirely inside the extension — no account needed here. Pick a paid plan to see billing details on this dashboard.</p>
-        <a href="pricing.html" class="btn btn-primary">View plans</a>
-      </div>
-    </section>
-  </div>
-
-  <div id="loggedInState" style="display:none;">
-    <section>
-      <div class="dash-head">
-        <div>
-          <div class="eyebrow"><span class="dot"></span> DASHBOARD</div>
-          <h1 style="font-size:30px;" id="accountEmail">—</h1>
-        </div>
-        <span class="tag" id="planTag">Plan</span>
-      </div>
-
-      <div class="stat-row">
-        <div class="stat"><div class="n" id="statSeats">1</div><div class="l">Seats</div></div>
-        <div class="stat"><div class="n" id="statStatus">—</div><div class="l">Billing status</div></div>
-        <div class="stat"><div class="n" id="statSince">—</div><div class="l">Last updated</div></div>
-      </div>
-    </section>
-
-    <section class="rule-top" style="padding-top:40px;">
-      <h2 style="font-size:20px; margin-bottom:16px;">Manage plan</h2>
-      <div class="card">
-        <p style="font-size:13.5px; color:rgba(233,230,220,0.6); margin-bottom:16px;">Upgrades, downgrades, cancellation, and payment method changes are all handled securely through Stripe's own customer portal — this site never touches your card details.</p>
-        <div class="plan-actions">
-          <a href="pricing.html" class="btn btn-ghost">Change plan</a>
-          <button class="btn btn-danger" id="switchAccountBtn">Look up a different email</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="rule-top" style="padding-top:40px;">
-      <h2 style="font-size:20px; margin-bottom:16px;">Connect the extension</h2>
-      <div class="card install-note">
-        <p>Your plan is confirmed here via Stripe, but the Chrome extension itself doesn't check this yet — right now it only knows about the local free-tier scan limit. Next step for a real launch: have <code>background.js</code> in the extension call <code>/api/account-status?email=...</code> on startup so Pro/Team features (unlimited scans, the shared team database) actually unlock inside the extension too.</p>
-      </div>
-    </section>
-  </div>
-</main>
-
-<footer>
-  <span>Postcheck — built by freelancers, for freelancers.</span>
-  <a href="pricing.html">Pricing</a>
-</footer>
-
-<script src="app.js?v=3"></script>
-<script>
-  function postcheckFormatDate(iso){
-    if (!iso) return "—";
-    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  }
-
-  function showState(id){
-    ['loadingState','lookupState','loggedOutState','loggedInState'].forEach(s => {
-      document.getElementById(s).style.display = (s === id) ? 'block' : 'none';
-    });
-  }
-
-  function renderAccount(account){
-    const plan = POSTCHECK_PLANS[account.plan] || POSTCHECK_PLANS.free;
-
-    if (account.plan === 'free') {
-      showState('loggedOutState');
-      return;
-    }
-
-    showState('loggedInState');
-    document.getElementById('accountEmail').textContent = account.email;
-    document.getElementById('statSeats').textContent = plan.seats;
-    document.getElementById('statStatus').textContent = account.status || 'active';
-    document.getElementById('statSince').textContent = postcheckFormatDate(account.updated_at);
-
-    const tag = document.getElementById('planTag');
-    tag.textContent = plan.name;
-    tag.className = 'tag ' + (account.plan === 'pro' ? 'tag-pro' : 'tag-team');
-  }
-
-  async function init(){
-    const params = new URLSearchParams(window.location.search);
-
-    // Case 1: just redirected back from Stripe with a session id.
-    const sessionId = params.get('session_id');
-    if (sessionId) {
-      showState('loadingState');
-      const session = await postcheckResolveSession(sessionId);
-      if (session && session.email) {
-        postcheckSetStoredEmail(session.email);
-        document.getElementById('welcomeBanner').style.display = 'block';
-        const account = await postcheckFetchAccountStatus(session.email);
-        if (account) { renderAccount(account); return; }
-      }
-    }
-
-    // Case 2: we already know which email to look up from a past visit.
-    const storedEmail = postcheckGetStoredEmail();
-    if (storedEmail) {
-      showState('loadingState');
-      const account = await postcheckFetchAccountStatus(storedEmail);
-      if (account) { renderAccount(account); return; }
-    }
-
-    // Case 3: no idea who this is — ask.
-    showState('lookupState');
-  }
-
-  document.getElementById('lookupBtn').addEventListener('click', async () => {
-    const email = document.getElementById('lookupEmail').value.trim();
-    if (!email) return;
-    const account = await postcheckFetchAccountStatus(email);
-    if (account && account.plan !== 'free') {
-      postcheckSetStoredEmail(email);
-      renderAccount(account);
-    } else {
-      document.getElementById('lookupError').style.display = 'block';
-    }
-  });
-
-  document.getElementById('switchAccountBtn')?.addEventListener('click', () => {
-    postcheckLogout();
-    showState('lookupState');
-  });
-
-  init();
-</script>
-</body>
-</html>
+  <div class="confirm-card" id="confirmCard">
+    <div class="confirm-icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 12.5L9.5 17L19 7" stroke="#121A1E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h2>Payment confirmed</h2>
+    <div class="confirm-plan-tag"><span class="dot"></span><span id="confirmPlanName">Pro</span> — active</div>
+    <p>Your subscription is live. Here's what to do next to actually start using it.</p>
+    <div
