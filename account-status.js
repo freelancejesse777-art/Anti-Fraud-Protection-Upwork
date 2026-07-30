@@ -22,9 +22,23 @@
 
 const { createClient } = require("@supabase/supabase-js");
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+let supabase;
+let initError = null;
+try {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY env var");
+  }
+  supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+} catch (e) {
+  initError = e.message;
+}
 
 module.exports = async (req, res) => {
+  if (initError) {
+    res.status(500).json({ error: "config_error", detail: initError });
+    return;
+  }
+
   if (req.method !== "GET") {
     res.status(405).json({ error: "method_not_allowed" });
     return;
