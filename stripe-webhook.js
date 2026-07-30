@@ -57,15 +57,28 @@ const PRICE_TO_PLAN = {
   "price_1TySH7FkgCyXaPrseVBnRkiz": "team",
 };
 
+/**
+ * With NODEJS_HELPERS=0 set (required to get the real raw request body
+ * for Stripe's signature check — see postcheckBufferRequest above),
+ * Vercel's res.status()/res.json() convenience methods are ALSO gone,
+ * not just the body-parsing helper. This is the plain Node.js
+ * equivalent of res.status(code).json(data).
+ */
+function postcheckSendJSON(res, statusCode, data) {
+  res.statusCode = statusCode;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(data));
+}
+
 module.exports = async (req, res) => {
   if (initError) {
     console.error("[stripe-webhook] init error:", initError);
-    res.status(500).json({ error: "config_error", detail: initError });
+    postcheckSendJSON(res, 500, { error: "config_error", detail: initError });
     return;
   }
 
   if (req.method !== "POST") {
-    res.status(405).json({ error: "method_not_allowed" });
+    postcheckSendJSON(res, 405, { error: "method_not_allowed" });
     return;
   }
 
@@ -77,7 +90,7 @@ module.exports = async (req, res) => {
     event = stripe.webhooks.constructEvent(rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.error("[stripe-webhook] signature verification failed:", err.message);
-    res.status(400).json({ error: "invalid_signature" });
+    postcheckSendJSON(res, 400, { error: "invalid_signature" });
     return;
   }
 
@@ -132,12 +145,12 @@ module.exports = async (req, res) => {
         break;
     }
 
-    res.status(200).json({ received: true });
+    postcheckSendJSON(res, 200, { received: true });
   } catch (err) {
     console.error("[stripe-webhook] handler error:", err);
     // Return 500 so Stripe retries — this only fires on unexpected
     // errors (e.g. Supabase down), not on bad input.
-    res.status(500).json({ error: "internal_error" });
+    postcheckSendJSON(res, 500, { error: "internal_error" });
   }
 };
 

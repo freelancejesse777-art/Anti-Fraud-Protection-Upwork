@@ -33,21 +33,34 @@ try {
   initError = e.message;
 }
 
+/**
+ * With NODEJS_HELPERS=0 set (required to get the real raw request body
+ * for Stripe's signature check — see postcheckBufferRequest above),
+ * Vercel's res.status()/res.json() convenience methods are ALSO gone,
+ * not just the body-parsing helper. This is the plain Node.js
+ * equivalent of res.status(code).json(data).
+ */
+function postcheckSendJSON(res, statusCode, data) {
+  res.statusCode = statusCode;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(data));
+}
+
 module.exports = async (req, res) => {
   if (initError) {
-    res.status(500).json({ error: "config_error", detail: initError });
+    postcheckSendJSON(res, 500, { error: "config_error", detail: initError });
     return;
   }
 
   if (req.method !== "GET") {
-    res.status(405).json({ error: "method_not_allowed" });
+    postcheckSendJSON(res, 405, { error: "method_not_allowed" });
     return;
   }
 
   const url = new URL(req.url, `https://${req.headers.host || "localhost"}`);
   const email = (url.searchParams.get("email") || "").trim().toLowerCase();
   if (!email) {
-    res.status(400).json({ error: "missing_email" });
+    postcheckSendJSON(res, 400, { error: "missing_email" });
     return;
   }
 
@@ -59,14 +72,14 @@ module.exports = async (req, res) => {
 
   if (error) {
     console.error("[account-status] supabase error:", error);
-    res.status(500).json({ error: "internal_error" });
+    postcheckSendJSON(res, 500, { error: "internal_error" });
     return;
   }
 
   if (!data) {
-    res.status(200).json({ email, plan: "free", status: "none" });
+    postcheckSendJSON(res, 200, { email, plan: "free", status: "none" });
     return;
   }
 
-  res.status(200).json(data);
+  postcheckSendJSON(res, 200, data);
 };

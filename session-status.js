@@ -21,30 +21,43 @@ try {
   initError = e.message;
 }
 
+/**
+ * With NODEJS_HELPERS=0 set (required to get the real raw request body
+ * for Stripe's signature check — see postcheckBufferRequest above),
+ * Vercel's res.status()/res.json() convenience methods are ALSO gone,
+ * not just the body-parsing helper. This is the plain Node.js
+ * equivalent of res.status(code).json(data).
+ */
+function postcheckSendJSON(res, statusCode, data) {
+  res.statusCode = statusCode;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(data));
+}
+
 module.exports = async (req, res) => {
   if (initError) {
-    res.status(500).json({ error: "config_error", detail: initError });
+    postcheckSendJSON(res, 500, { error: "config_error", detail: initError });
     return;
   }
 
   if (req.method !== "GET") {
-    res.status(405).json({ error: "method_not_allowed" });
+    postcheckSendJSON(res, 405, { error: "method_not_allowed" });
     return;
   }
 
   const url = new URL(req.url, `https://${req.headers.host || "localhost"}`);
   const sessionId = url.searchParams.get("session_id");
   if (!sessionId) {
-    res.status(400).json({ error: "missing_session_id" });
+    postcheckSendJSON(res, 400, { error: "missing_session_id" });
     return;
   }
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     const email = session.customer_details?.email || session.customer_email || null;
-    res.status(200).json({ email, paymentStatus: session.payment_status });
+    postcheckSendJSON(res, 200, { email, paymentStatus: session.payment_status });
   } catch (err) {
     console.error("[session-status] stripe error:", err.message);
-    res.status(400).json({ error: "invalid_session" });
+    postcheckSendJSON(res, 400, { error: "invalid_session" });
   }
 };
