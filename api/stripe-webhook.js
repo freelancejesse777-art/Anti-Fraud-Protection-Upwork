@@ -28,8 +28,8 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 // Fill these in with the Price IDs you create in the Stripe Dashboard
 // (Product catalog -> Add product -> copy the price_... id).
 const PRICE_TO_PLAN = {
-  "price_REPLACE_WITH_YOUR_PRO_PRICE_ID": "pro",
-  "price_REPLACE_WITH_YOUR_TEAM_PRICE_ID": "team",
+  "price_1TySaRFkgCyXaPrsjFA7Na3z": "pro",
+  "price_1TySH7FkgCyXaPrseVBnRkiz": "team",
 };
 
 module.exports = async (req, res) => {
