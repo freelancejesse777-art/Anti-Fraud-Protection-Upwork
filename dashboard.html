@@ -6,7 +6,173 @@
 <title>Dashboard — Postcheck</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3">
+<style>
+:root{
+  --ink: #121A1E;
+  --ink-soft: #1D272C;
+  --paper: #E9E6DC;
+  --safe: #3E7C59;
+  --safe-dim: #274A38;
+  --risk: #C1443B;
+  --risk-dim: #4A2320;
+  --caution: #C48A3D;
+  --caution-dim: #4A3616;
+  --steel: #4C7A93;
+  --line: rgba(233,230,220,0.14);
+  --line-strong: rgba(233,230,220,0.28);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{ scroll-behavior:smooth; }
+body{
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+.mono{ font-family:'IBM Plex Mono', monospace; letter-spacing:0.02em; }
+h1,h2,h3,.display{ font-family:'Space Grotesk', sans-serif; letter-spacing:-0.01em; }
+a{ color:inherit; }
+:focus-visible{ outline: 2px solid var(--steel); outline-offset: 2px; }
+
+/* ---------- nav ---------- */
+nav{
+  position: sticky; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(18,26,30,0.9);
+  backdrop-filter: blur(8px);
+}
+nav .logo{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; text-decoration:none; }
+nav .navlinks{ display:flex; align-items:center; }
+nav .navlinks a{ font-size: 13px; color: rgba(233,230,220,0.6); text-decoration:none; margin-left: 22px; }
+nav .navlinks a:hover, nav .navlinks a.active{ color: var(--paper); }
+nav .navlinks .btn{ margin-left: 22px; }
+
+/* ---------- buttons ---------- */
+.btn{
+  font-family:'Inter',sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration:none;
+  display:inline-block;
+}
+.btn-primary{ background: var(--paper); color: var(--ink); }
+.btn-primary:hover{ opacity: 0.92; }
+.btn-ghost{ background: transparent; color: var(--paper); border: 1px solid var(--line-strong); }
+.btn-ghost:hover{ border-color: rgba(233,230,220,0.5); }
+.btn-danger{ background: transparent; color: #F0B6B0; border: 1px solid rgba(193,68,59,0.4); }
+.btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+/* ---------- shared layout ---------- */
+main{ max-width: 1080px; margin: 0 auto; padding: 60px 24px; }
+main.narrow{ max-width: 640px; }
+section{ margin-bottom: 60px; }
+.eyebrow{
+  font-family:'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--steel);
+  display:flex; align-items:center; gap:10px;
+  margin-bottom: 18px;
+}
+.eyebrow .dot{ width:6px;height:6px;border-radius:50%; background: var(--safe); box-shadow: 0 0 0 3px rgba(62,124,89,0.25); }
+
+.card{
+  border: 1px solid var(--line); border-radius: 12px;
+  padding: 28px; background: var(--ink-soft);
+}
+
+footer{
+  border-top: 1px solid var(--line);
+  padding: 28px 24px;
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+  max-width: 1080px; margin: 0 auto;
+  font-size: 12px; color: rgba(233,230,220,0.4);
+}
+footer a{ color: rgba(233,230,220,0.55); text-decoration:none; }
+
+/* ---------- pricing table (shared by index + pricing page) ---------- */
+.plans{ display:grid; grid-template-columns: repeat(3,1fr); gap:20px; }
+.plan{
+  border: 1px solid var(--line); border-radius: 12px;
+  padding: 26px; background: var(--ink-soft);
+  display:flex; flex-direction:column;
+}
+.plan.featured{ border-color: var(--steel); position:relative; }
+.plan.featured::before{
+  content:'MOST USED';
+  position:absolute; top:-11px; left: 24px;
+  font-family:'IBM Plex Mono',monospace; font-size:10px;
+  letter-spacing:0.1em; background: var(--steel); color: var(--ink);
+  padding:3px 9px; border-radius:4px;
+}
+.plan .pname{ font-size:14px; color: rgba(233,230,220,0.6); margin-bottom:10px; }
+.plan .price{ font-size: 34px; font-family:'Space Grotesk',sans-serif; font-weight:600; margin-bottom: 4px;}
+.plan .price span{ font-size:13px; color: rgba(233,230,220,0.45); font-family:'Inter',sans-serif; font-weight:400;}
+.plan .pdesc{ font-size:12.5px; color: rgba(233,230,220,0.5); margin-bottom:20px; }
+.plan ul{ list-style:none; margin-bottom: 24px; flex:1; }
+.plan li{ font-size: 13px; padding: 7px 0; border-top: 1px solid var(--line); color: rgba(233,230,220,0.75); }
+.plan li:first-child{ border-top:none; }
+.plan .btn{ width:100%; text-align:center; }
+
+/* ---------- feature comparison table ---------- */
+.compare{ width:100%; border-collapse:collapse; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+.compare th, .compare td{ text-align:left; padding: 14px 16px; font-size: 13.5px; border-top: 1px solid var(--line); }
+.compare thead th{ border-top:none; background: var(--ink-soft); font-family:'Space Grotesk',sans-serif; font-weight:600; }
+.compare td.center, .compare th.center{ text-align:center; }
+.compare tbody tr:hover{ background: rgba(233,230,220,0.03); }
+.check{ color: var(--safe); font-weight:700; }
+.dash{ color: rgba(233,230,220,0.25); }
+
+/* ---------- forms ---------- */
+.field{ margin-bottom: 16px; }
+.field label{ display:block; font-size: 12.5px; color: rgba(233,230,220,0.6); margin-bottom: 6px; }
+.field input, .field select{
+  width:100%; padding: 12px 14px; border-radius:8px;
+  border: 1px solid var(--line-strong); background: var(--ink); color: var(--paper);
+  font-family:'Inter',sans-serif; font-size: 14px;
+}
+.field input::placeholder{ color: rgba(233,230,220,0.3); }
+.field-row{ display:flex; gap:12px; }
+.field-row .field{ flex:1; }
+.form-note{ font-family:'IBM Plex Mono',monospace; font-size:11px; color: rgba(233,230,220,0.4); margin-top: 14px; line-height:1.6; }
+
+/* ---------- badges / tags ---------- */
+.tag{
+  font-family:'IBM Plex Mono',monospace; font-size: 10.5px; font-weight:700;
+  padding: 3px 9px; border-radius: 999px; text-transform:uppercase; letter-spacing:0.04em;
+}
+.tag-free{ background: rgba(76,122,147,0.18); color:#9CC2D6; border:1px solid rgba(76,122,147,0.4); }
+.tag-pro{ background: var(--safe-dim); color:#9BD3B4; border:1px solid rgba(62,124,89,0.4); }
+.tag-team{ background: var(--caution-dim); color:#E3B679; border:1px solid rgba(196,138,61,0.4); }
+
+/* ---------- dashboard ---------- */
+.stat-row{ display:flex; gap:14px; flex-wrap:wrap; }
+.stat{ flex:1; min-width:140px; background: var(--ink); border:1px solid var(--line); border-radius:10px; padding: 16px; }
+.stat .n{ font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; }
+.stat .l{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color: rgba(233,230,220,0.45); margin-top:4px; }
+
+.empty-account{
+  border: 1px dashed var(--line-strong); border-radius: 12px;
+  padding: 40px; text-align:center;
+}
+.empty-account p{ color: rgba(233,230,220,0.6); font-size:14px; margin: 10px 0 22px; max-width:420px; margin-left:auto; margin-right:auto; }
+
+@media (max-width: 760px){
+  .plans, .step-grid{ grid-template-columns: 1fr; }
+  nav .navlinks a:not(.btn){ display:none; }
+  .field-row{ flex-direction:column; }
+  .compare{ font-size: 12px; }
+}
+
+</style>
 <style>
   .confirm-card{
     display: none;
@@ -71,5 +237,292 @@
     <h2>Payment confirmed</h2>
     <div class="confirm-plan-tag"><span class="dot"></span><span id="confirmPlanName">Pro</span> — active</div>
     <p>Your subscription is live. Here's what to do next to actually start using it.</p>
-    <div
-      </html>
+    <div class="confirm-steps">
+      <div class="confirm-step">
+        <span class="num">01</span>
+        <p>Install the Postcheck Chrome extension if you haven't already — grab it from GitHub.</p>
+      </div>
+      <div class="confirm-step">
+        <span class="num">02</span>
+        <p>Browse Upwork's job feed as usual — risk badges appear automatically on listings.</p>
+      </div>
+      <div class="confirm-step">
+        <span class="num">03</span>
+        <p>Manage or cancel your plan any time from this dashboard, below.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="loadingState" class="loading">Looking up your account…</div>
+
+  <div id="lookupState" style="display:none;">
+    <section>
+      <div class="eyebrow"><span class="dot"></span> DASHBOARD</div>
+      <h1 style="font-size:30px; margin-bottom: 20px;">Find your account</h1>
+      <div class="card" style="max-width:420px;">
+        <div class="field">
+          <label for="lookupEmail">Email you checked out with</label>
+          <input type="email" id="lookupEmail" placeholder="you@example.com">
+        </div>
+        <button class="btn btn-primary" id="lookupBtn" style="width:100%;">Look up plan</button>
+        <div class="form-note" id="lookupError" style="display:none; color:#F0B6B0;">No account found for that email — it may take a minute after checkout for payment to be confirmed, or check the address you used.</div>
+      </div>
+    </section>
+  </div>
+
+  <div id="loggedOutState" style="display:none;">
+    <section>
+      <div class="eyebrow"><span class="dot"></span> DASHBOARD</div>
+      <h1 style="font-size:30px; margin-bottom: 20px;">No paid plan yet</h1>
+      <div class="empty-account">
+        <h3 style="font-size:16px;">You're on the Free tier</h3>
+        <p>The Free tier works entirely inside the extension — no account needed here. Pick a paid plan to see billing details on this dashboard.</p>
+        <a href="pricing.html" class="btn btn-primary">View plans</a>
+      </div>
+    </section>
+  </div>
+
+  <div id="loggedInState" style="display:none;">
+    <section>
+      <div class="dash-head">
+        <div>
+          <div class="eyebrow"><span class="dot"></span> DASHBOARD</div>
+          <h1 style="font-size:30px;" id="accountEmail">—</h1>
+        </div>
+        <span class="tag" id="planTag">Plan</span>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><div class="n" id="statSeats">1</div><div class="l">Seats</div></div>
+        <div class="stat"><div class="n" id="statStatus">—</div><div class="l">Billing status</div></div>
+        <div class="stat"><div class="n" id="statSince">—</div><div class="l">Last updated</div></div>
+      </div>
+    </section>
+
+    <section class="rule-top" style="padding-top:40px;">
+      <h2 style="font-size:20px; margin-bottom:16px;">Manage plan</h2>
+      <div class="card">
+        <p style="font-size:13.5px; color:rgba(233,230,220,0.6); margin-bottom:16px;">Upgrades, downgrades, cancellation, and payment method changes are all handled securely through Stripe's own customer portal — this site never touches your card details.</p>
+        <div class="plan-actions">
+          <a href="pricing.html" class="btn btn-ghost">Change plan</a>
+          <button class="btn btn-danger" id="switchAccountBtn">Look up a different email</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="rule-top" style="padding-top:40px;">
+      <h2 style="font-size:20px; margin-bottom:16px;">Connect the extension</h2>
+      <div class="card install-note">
+        <p>Your plan is confirmed here via Stripe, but the Chrome extension itself doesn't check this yet — right now it only knows about the local free-tier scan limit. Next step for a real launch: have <code>background.js</code> in the extension call <code>/api/account-status?email=...</code> on startup so Pro/Team features (unlimited scans, the shared team database) actually unlock inside the extension too.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <span>Postcheck — built by freelancers, for freelancers.</span>
+  <a href="pricing.html">Pricing</a>
+</footer>
+
+<script>
+/**
+ * Postcheck site — shared account logic
+ * -------------------------------------------------
+ * Real backend calls, not localStorage fakery. Plan status is fetched
+ * from /api/account-status, which reads a database row that only
+ * Stripe's own signed webhook is allowed to write (see
+ * api/stripe-webhook.js) — so what's shown here reflects an actual
+ * payment, not something the browser claimed about itself.
+ *
+ * The one thing still kept in localStorage is *which email to look up*
+ * on repeat visits — that's a convenience, not an auth mechanism. See
+ * the "Important" note in api/account-status.js: this MVP does not
+ * have real login/auth, so don't treat this as production-secure until
+ * that's added.
+ */
+
+const POSTCHECK_EMAIL_KEY = "postcheck_email";
+
+const POSTCHECK_PLANS = {
+  free: { name: "Free", price: 0, seats: 1, dailyScanLimit: 5 },
+  pro: { name: "Pro", price: 8, seats: 1, dailyScanLimit: null },
+  team: { name: "Team", price: 16, seats: 5, dailyScanLimit: null },
+};
+
+// Fill these in with the real Payment Links you create in the Stripe
+// Dashboard (Payment Links -> Create link, one per price). No code
+// needed on Stripe's side for this part.
+//
+// IMPORTANT: replace the WHOLE quoted string below, not just the
+// REPLACE_WITH_... part. A real Stripe Payment Link already starts
+// with "https://buy.stripe.com/", so if you paste your full link
+// after that existing prefix you'll end up with a broken doubled URL
+// like "https://buy.stripe.com/https://buy.stripe.com/..." — Stripe
+// will reject that with an Access Denied error. postcheckNormalizeLink()
+// below catches and auto-fixes that specific mistake as a safety net,
+// but it's still best to just replace the entire string cleanly.
+const POSTCHECK_STRIPE_LINKS = {
+  pro: "https://buy.stripe.com/28EcN5b5Pb9b4M09Pr1ck00",
+  team: "https://buy.stripe.com/bJe00jddX1yBguIaTv1ck02",
+};
+
+/**
+ * Defensive fix for the doubled-prefix paste mistake described above.
+ * "https://buy.stripe.com/https://buy.stripe.com/abc123" -> "https://buy.stripe.com/abc123"
+ */
+function postcheckNormalizeLink(url) {
+  const doubled = /^https:\/\/buy\.stripe\.com\/(https:\/\/buy\.stripe\.com\/.+)$/;
+  const match = url.match(doubled);
+  return match ? match[1] : url;
+}
+
+function postcheckGetStoredEmail() {
+  try {
+    return localStorage.getItem(POSTCHECK_EMAIL_KEY);
+  } catch (e) {
+    return null;
+  }
+}
+
+function postcheckSetStoredEmail(email) {
+  try {
+    localStorage.setItem(POSTCHECK_EMAIL_KEY, email);
+  } catch (e) {
+    /* ignore */
+  }
+}
+
+function postcheckLogout() {
+  try {
+    localStorage.removeItem(POSTCHECK_EMAIL_KEY);
+  } catch (e) {
+    /* ignore */
+  }
+}
+
+/**
+ * Fetches the REAL plan for an email from the backend. Returns
+ * { email, plan, status, updated_at } or null on network failure.
+ */
+async function postcheckFetchAccountStatus(email) {
+  try {
+    const res = await fetch(`/api/account-status?email=${encodeURIComponent(email)}`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    console.error("[postcheck] account-status fetch failed:", e);
+    return null;
+  }
+}
+
+/**
+ * After Stripe redirects back post-payment with ?session_id=..., this
+ * resolves that session to the email that just paid.
+ */
+async function postcheckResolveSession(sessionId) {
+  try {
+    const res = await fetch(`/api/session-status?session_id=${encodeURIComponent(sessionId)}`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    console.error("[postcheck] session-status fetch failed:", e);
+    return null;
+  }
+}
+
+function postcheckHighlightNav() {
+  const path = window.location.pathname.split("/").pop() || "index.html";
+  document.querySelectorAll("nav .navlinks a[data-page]").forEach((link) => {
+    if (link.dataset.page === path) link.classList.add("active");
+  });
+}
+
+document.addEventListener("DOMContentLoaded", postcheckHighlightNav);
+
+</script>
+<script>
+  function postcheckFormatDate(iso){
+    if (!iso) return "—";
+    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function showState(id){
+    ['loadingState','lookupState','loggedOutState','loggedInState'].forEach(s => {
+      document.getElementById(s).style.display = (s === id) ? 'block' : 'none';
+    });
+  }
+
+  function renderAccount(account){
+    const plan = POSTCHECK_PLANS[account.plan] || POSTCHECK_PLANS.free;
+
+    if (account.plan === 'free') {
+      showState('loggedOutState');
+      return;
+    }
+
+    showState('loggedInState');
+    document.getElementById('accountEmail').textContent = account.email;
+    document.getElementById('statSeats').textContent = plan.seats;
+    document.getElementById('statStatus').textContent = account.status || 'active';
+    document.getElementById('statSince').textContent = postcheckFormatDate(account.updated_at);
+
+    const tag = document.getElementById('planTag');
+    tag.textContent = plan.name;
+    tag.className = 'tag ' + (account.plan === 'pro' ? 'tag-pro' : 'tag-team');
+  }
+
+  async function init(){
+    const params = new URLSearchParams(window.location.search);
+
+    // Case 1: just redirected back from Stripe with a session id.
+    const sessionId = params.get('session_id');
+    if (sessionId) {
+      showState('loadingState');
+      const session = await postcheckResolveSession(sessionId);
+      if (session && session.email) {
+        postcheckSetStoredEmail(session.email);
+        const account = await postcheckFetchAccountStatus(session.email);
+        if (account && account.plan !== 'free') {
+          const plan = POSTCHECK_PLANS[account.plan] || POSTCHECK_PLANS.free;
+          document.getElementById('confirmPlanName').textContent = plan.name;
+          document.getElementById('confirmCard').style.display = 'block';
+          renderAccount(account);
+          return;
+        }
+        if (account) { renderAccount(account); return; }
+      }
+    }
+
+    // Case 2: we already know which email to look up from a past visit.
+    const storedEmail = postcheckGetStoredEmail();
+    if (storedEmail) {
+      showState('loadingState');
+      const account = await postcheckFetchAccountStatus(storedEmail);
+      if (account) { renderAccount(account); return; }
+    }
+
+    // Case 3: no idea who this is — ask.
+    showState('lookupState');
+  }
+
+  document.getElementById('lookupBtn').addEventListener('click', async () => {
+    const email = document.getElementById('lookupEmail').value.trim();
+    if (!email) return;
+    const account = await postcheckFetchAccountStatus(email);
+    if (account && account.plan !== 'free') {
+      postcheckSetStoredEmail(email);
+      renderAccount(account);
+    } else {
+      document.getElementById('lookupError').style.display = 'block';
+    }
+  });
+
+  document.getElementById('switchAccountBtn')?.addEventListener('click', () => {
+    postcheckLogout();
+    showState('lookupState');
+  });
+
+  init();
+</script>
+</body>
+</html>
